@@ -1,0 +1,7 @@
+gitadm is a script for assisting in the management of git repositories.  It lets you add public keys to git accounts and it makes creating new repositories easier.
+
+Here's an example of how to create a new repo on the server and populate it with the contents of the current directory:
+
+./gitadm create-repo -s gitserver -r myrepos/stuff.git --use-dir
+
+This also automatically sets up tracking of the master branch for you so that you can use "git pull" and "git push" without arguments.
