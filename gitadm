@@ -118,7 +118,7 @@ elsif :create_repo == command
     opts.on('-r', '--path-to-repo REPO', 'The path to the repository on the server') do |path|
       options.repo_path = path
     end
-    opts.on('-u', '--use-dir', "Associates the current dir with the new repo and sends the files") do
+    opts.on('-d', '--use-dir', "Associates the current dir with the new repo and sends the files") do
       options.use_dir = true
     end
     help_opt(opts)
