@@ -128,8 +128,8 @@ elsif :create_repo == command
   
   # Make the new dir and init it
   ssh = "ssh #{options.user}@#{options.server}"
-  `#{ssh} 'mkdir -p ~/#{options.repo_path}'`
-  `#{ssh} 'cd #{options.repo_path} ; git init --bare'`
+  `#{ssh} 'mkdir -p #{options.repo_path}'`
+  `#{ssh} 'cd #{options.repo_path} ; git --bare init'`
   
   # Upload dir contents
   if options.use_dir
