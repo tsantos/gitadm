@@ -70,7 +70,7 @@ if :add_key == command
     user_opt(opts, options)
     server_opt(opts, options)
     opts.on('-f', '--pub-key-file [FILE]', 'The file containing the public key(s)') do |path|
-      options.pub_key_file = path
+      options.pub_key_path = path
     end
     opts.on('-i', '--stdin', 'get the key(s) from stdin') do
       options.stdin = true
@@ -88,16 +88,22 @@ if :add_key == command
     File.open(file.path, 'w') do |f|
       f.puts($stdin.readline)
     end
-  elsif options.pub_key_file
+  elsif options.pub_key_path
     file = File.new(options.pub_key_path)
   end
   
-  # Put the key into the git user's authorized_keys file
+  ssh = "ssh #{options.user}@#{options.server}"
+
+  # Copy the key over as a temp file
   file_name = File.basename(file.path)
   `scp #{file.path} #{options.user}@#{options.server}:/tmp/#{file_name}`
-  ssh = "ssh #{options.user}@#{options.server}"
-  auth_file = "~/.ssh/authorized_keys"
-  `#{ssh} 'cat /tmp/#{file_name} >> ~/.ssh/authorized_keys'`
+  
+  # Figure out which authorized_keys file they're using 
+  auth_file = ".ssh/authorized_keys"
+  auth_file = `#{ssh} '[ -f #{auth_file} ] && echo "#{auth_file}" || echo "#{auth_file}2"'`.strip
+  
+  # Get the key into the auth file and cleanup temp
+  `#{ssh} 'cat /tmp/#{file_name} >> #{auth_file}'`
   `#{ssh} 'rm /tmp/#{file_name}'`
 
 =begin
