@@ -116,7 +116,7 @@ elsif :create_repo == command
     user_opt(opts, options)
     server_opt(opts, options)
     opts.on('-r', '--path-to-repo REPO', 'The path to the repository on the server') do |path|
-      options.repo_path = path
+      options.repo_path = (path =~ /.git$/ ? path : "#{path}.git")
     end
     opts.on('-d', '--use-dir', "Associates the current dir with the new repo and sends the files") do
       options.use_dir = true
