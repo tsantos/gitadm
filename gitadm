@@ -84,7 +84,7 @@ if :add_key == command
   file = nil
   
   if options.stdin
-    file = Tempfile.new("gits")
+    file = Tempfile.new("gitadm")
     File.open(file.path, 'w') do |f|
       f.puts($stdin.readline)
     end
