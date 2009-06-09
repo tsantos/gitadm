@@ -136,6 +136,6 @@ elsif :create_repo == command
     `git init ; git add * ; git commit -m "Initial commit"`
     `git remote add origin #{options.user}@#{options.server}:#{options.repo_path}`
     `git push origin master`
-    'git config branch.master.remote origin ; git config branch.master.merge refs/heads/master'
+    `git config branch.master.remote origin ; git config branch.master.merge refs/heads/master`
   end
 end
