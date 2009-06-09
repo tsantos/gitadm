@@ -131,20 +131,11 @@ elsif :create_repo == command
   `#{ssh} 'mkdir -p #{options.repo_path}'`
   `#{ssh} 'cd #{options.repo_path} ; git --bare init'`
   
-  # Upload dir contents
+  # Upload dir contents and wire-up git pull and push
   if options.use_dir
     `git init ; git add * ; git commit -m "Initial commit"`
     `git remote add origin #{options.user}@#{options.server}:#{options.repo_path}`
     `git push origin master`
-    
-    # Add tracking for the branch so you can do simple git pull and git push
-    track_hack = <<EOF
-[branch "master"]
-	remote = origin
-	merge = refs/heads/master
-EOF
-    File.open('.git/config', 'a') do |f|
-      f.puts(track_hack)
-    end
+    'git config branch.master.remote origin ; git config branch.master.merge refs/heads/master'
   end
 end
