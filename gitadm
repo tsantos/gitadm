@@ -116,8 +116,6 @@ if :add_key == command
 elsif :checkout == command
   opts = OptionParser.new do |opts|
     opts.banner = "Usage:"
-    user_opt(opts, options)
-    server_opt(opts, options)
     opts.on('-b', '--branch-name NAME', 'The branch name to check out') do |name|
       options.branch_name = name
     end
@@ -135,8 +133,6 @@ elsif :checkout == command
 elsif :create_remote_branch == command
   opts = OptionParser.new do |opts|
     opts.banner = "Usage:"
-    user_opt(opts, options)
-    server_opt(opts, options)
     opts.on('-b', '--branch-name NAME', 'The branch name to create') do |name|
       options.branch_name = name
     end
