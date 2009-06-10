@@ -165,6 +165,9 @@ elsif :create_repo == command
     opts.on('-d', '--use-dir', "Associates the current dir with the new repo and sends the files") do
       options.use_dir = true
     end
+    opts.on('-i', '--init', "Instead of --use-dir.  Init initializes the current dir but doesn't add all.  You need to do git adds and a git push origin master before things will work.") do
+      options.init = true
+    end
     help_opt(opts)
   end
   if !defined? ARGS then puts opts; exit(1); end
@@ -176,10 +179,13 @@ elsif :create_repo == command
   `#{ssh} 'cd #{options.repo_path} ; git --bare init'`
   
   # Upload dir contents and wire-up git pull and push
-  if options.use_dir
-    `git init ; git add * ; git commit -m "Initial commit"`
+  if options.use_dir || options.init
+    `git init`
     `git remote add origin #{options.user}@#{options.server}:#{options.repo_path}`
-    `git push origin master`
+    if options.use_dir
+      `git add * ; git commit -m "Initial commit"`
+      `git push origin master`
+    end
     `git config branch.master.remote origin ; git config branch.master.merge refs/heads/master`
     `git config push.default matching` # stop the new git from complaining
   end
