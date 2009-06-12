@@ -168,15 +168,20 @@ elsif :create_repo == command
     opts.on('-i', '--init', "Instead of --use-dir.  Init initializes the current dir but doesn't add all.  You need to do git adds and a git push origin master before things will work.") do
       options.init = true
     end
+    opts.on( "--no-remote-create", "Don't create the dirs on the remote machine" ) do
+      options.no_remote_create = true
+    end
     help_opt(opts)
   end
   if !defined? ARGS then puts opts; exit(1); end
   opts.parse! ARGS
   
   # Make the new dir and init it
-  ssh = "ssh #{options.user}@#{options.server}"
-  `#{ssh} 'mkdir -p #{options.repo_path}'`
-  `#{ssh} 'cd #{options.repo_path} ; git --bare init'`
+  unless options.no_remote_create
+    ssh = "ssh #{options.user}@#{options.server}"
+    `#{ssh} 'mkdir -p #{options.repo_path}'`
+    `#{ssh} 'cd #{options.repo_path} ; git --bare init'`
+  end
   
   # Upload dir contents and wire-up git pull and push
   if options.use_dir || options.init
