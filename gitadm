@@ -152,7 +152,9 @@ elsif :create_remote_branch == command
 =begin
   create-repo
   Creates a new bare git repository at the given path.  It also allows you to send the current
-  directory to the new repo and associates the repository and the local dir.
+  directory to the new repo and associates the repository and the local dir.  The --no-remote-create
+  option is for sending the contents of a dir to to a place where the git repository has already been
+  initialized like github.com.
 =end
 elsif :create_repo == command
   opts = OptionParser.new do |opts|
