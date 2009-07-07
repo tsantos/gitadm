@@ -128,7 +128,8 @@ elsif :checkout == command
   
 =begin
   create-remote-branch
-  Creates a remote branch and optionally lets you check it out with tracking
+  Creates a remote branch off the master and optionally lets you check it out with
+  tracking.
 =end
 elsif :create_remote_branch == command
   opts = OptionParser.new do |opts|
@@ -162,7 +163,7 @@ elsif :create_repo == command
     user_opt(opts, options)
     server_opt(opts, options)
     opts.on('-r', '--path-to-repo REPO', 'The path to the repository on the server') do |path|
-      options.repo_path = (path =~ /\.git$/ ? path : "#{path}.git")
+      options.repo_path = path
     end
     opts.on('-d', '--use-dir', "Associates the current dir with the new repo and sends the files") do
       options.use_dir = true
