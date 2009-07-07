@@ -180,8 +180,10 @@ elsif :create_repo == command
     opts.on( "--no-remote-create", "Don't create the dirs on the remote machine" ) do
       options.no_remote_create = true
     end
-    opts.on('-b', '--create-branches', "A comma separated list of branches") do |branches|
-      options.branches = branches.split(',')
+    opts.on('-b [=BRANCH]', "A comma separated list of branches") do |branches|
+      # Ugly I know but this is how I know to make it work.
+      options.do_branches = true
+      options.branches = branches.split(/,/) if branches
     end
     opts.on('-c', '--checkout-branches', "Also does a checkout of the branches if using --create-branches") do
       options.checkout = true
@@ -210,7 +212,7 @@ elsif :create_repo == command
     `git config push.default matching` # stop the new git from complaining
   end
   
-  if options.branches
-    branches.each { |branch| create_branch(branch, options.checkout) }
+  if options.do_branches
+    options.branches.each { |branch| create_branch(branch, options.checkout) }
   end
 end
