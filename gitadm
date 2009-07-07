@@ -61,6 +61,13 @@ def help_opt opts
   end
 end
 
+def create_branch branch_name, checkout = false
+  `git push origin master:refs/heads/#{branch_name}`
+  if checkout
+    `git checkout --track -b #{branch_name} origin/#{branch_name}`
+  end
+end
+
 =begin
   add-key
   We add a key to the authorized_keys file for the git account on the server.  This will only
@@ -145,10 +152,7 @@ elsif :create_remote_branch == command
   if !defined? ARGS then puts opts; exit(1); end
   opts.parse! ARGS
 
-  `git push origin master:refs/heads/#{options.branch_name}`
-  if options.checkout
-    `git checkout --track -b #{options.branch_name} origin/#{options.branch_name}`
-  end
+  create_branch(options.branch_name, options.checkout)
 
 =begin
   create-repo
@@ -158,6 +162,8 @@ elsif :create_remote_branch == command
   initialized like github.com.
 =end
 elsif :create_repo == command
+  options.checkout = false
+  
   opts = OptionParser.new do |opts|
     opts.banner = "Usage:"
     user_opt(opts, options)
@@ -173,6 +179,12 @@ elsif :create_repo == command
     end
     opts.on( "--no-remote-create", "Don't create the dirs on the remote machine" ) do
       options.no_remote_create = true
+    end
+    opts.on('-b', '--create-branches', "A comma separated list of branches") do |branches|
+      options.branches = branches.split(',')
+    end
+    opts.on('-c', '--checkout-branches', "Also does a checkout of the branches if using --create-branches") do
+      options.checkout = true
     end
     help_opt(opts)
   end
@@ -196,5 +208,9 @@ elsif :create_repo == command
     end
     `git config branch.master.remote origin ; git config branch.master.merge refs/heads/master`
     `git config push.default matching` # stop the new git from complaining
+  end
+  
+  if options.branches
+    branches.each { |branch| create_branch(branch, options.checkout) }
   end
 end
