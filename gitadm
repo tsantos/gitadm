@@ -212,5 +212,6 @@ elsif :create_repo == command
   
   if options.branches
     options.branches.each { |branch| create_branch(branch, options.checkout) }
+    `git checkout master` if options.checkout
   end
 end
