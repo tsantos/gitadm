@@ -41,6 +41,7 @@ command = ARGV[0].gsub('-', '_').to_sym
 ARGS = ARGV[1..-1] if ARGV.length > 1
 options = OpenStruct.new
 options.user = 'git'
+options.server = 'git'
 
 def user_opt opts, options
   opts.on('-u', '--user [USER]', "The git user on the machine. Defaults to 'git'.") do |user|
@@ -49,7 +50,7 @@ def user_opt opts, options
 end
 
 def server_opt opts, options
-  opts.on('-s', '--server SERVER', "The host of the git repository") do |server|
+  opts.on('-s', '--server SERVER', "The host of the git repository.  Defaults to 'git'.") do |server|
     options.server = server
   end
 end
