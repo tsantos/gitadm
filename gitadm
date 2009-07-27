@@ -7,7 +7,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+		http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,20 +21,20 @@ require 'ostruct'
 require 'tempfile'
 
 if ARGV.length == 0
-  s = <<EOF
-  
-  gitadm is a tool for managing a git repositories.  It does nothing for access control except to help
-  with adding ssh keys.
-  
-  Usage:
-      add-key               Adds a public key to the account on the specified server
-      checkout              Checks out a branch with tracking
-      create-remote-branch  Creates a new remote branch
-      create-repo           Creates a new git repository
-      
+	s = <<EOF
+	
+	gitadm is a tool for managing a git repositories.	 It does nothing for access control except to help
+	with adding ssh keys.
+	
+	Usage:
+			add-key								Adds a public key to the account on the specified server
+			checkout							Checks out a branch with tracking
+			create-remote-branch	Creates a new remote branch
+			create-repo						Creates a new git repository
+			
 EOF
-  puts s
-  exit(1)
+	puts s
+	exit(1)
 end
 
 command = ARGV[0].gsub('-', '_').to_sym
@@ -44,175 +44,175 @@ options.user = 'git'
 options.server = 'git'
 
 def user_opt opts, options
-  opts.on('-u', '--user [USER]', "The git user on the machine. Defaults to 'git'.") do |user|
-    options.user = user
-  end
+	opts.on('-u', '--user [USER]', "The git user on the machine. Defaults to 'git'.") do |user|
+		options.user = user
+	end
 end
 
 def server_opt opts, options
-  opts.on('-s', '--server SERVER', "The host of the git repository.  Defaults to 'git'.") do |server|
-    options.server = server
-  end
+	opts.on('-s', '--server SERVER', "The host of the git repository.	 Defaults to 'git'.") do |server|
+		options.server = server
+	end
 end
 
 def help_opt opts
-  opts.on("-h", "--help", "Show this message") do
-    puts opts
-    exit
-  end
+	opts.on("-h", "--help", "Show this message") do
+		puts opts
+		exit
+	end
 end
 
 def create_branch branch_name, checkout = false
-  `git push origin master:refs/heads/#{branch_name}`
-  if checkout
-    `git checkout --track -b #{branch_name} origin/#{branch_name}`
-  end
+	`git push origin master:refs/heads/#{branch_name}`
+	if checkout
+		`git checkout --track -b #{branch_name} origin/#{branch_name}`
+	end
 end
 
 =begin
-  add-key
-  We add a key to the authorized_keys file for the git account on the server.  This will only
-  work if you already have your key pushed to the server.  It's intended as a way to add new keys
-  for existing users.
+	add-key
+	We add a key to the authorized_keys file for the git account on the server.	 This will only
+	work if you already have your key pushed to the server.	 It's intended as a way to add new keys
+	for existing users.
 =end
 if :add_key == command
-  opts = OptionParser.new do |opts|
-    opts.banner = "Usage:"
-    user_opt(opts, options)
-    server_opt(opts, options)
-    opts.on('-f', '--pub-key-file [FILE]', 'The file containing the public key(s)') do |path|
-      options.pub_key_path = path
-    end
-    opts.on('-i', '--stdin', 'get the key(s) from stdin') do
-      options.stdin = true
-    end
-    help_opt(opts)
-  end
-  if !defined? ARGS then puts opts; exit(1); end
-  opts.parse! ARGS
-  
-  # Setup the key file to send
-  file = nil
-  
-  if options.stdin
-    file = Tempfile.new("gitadm")
-    File.open(file.path, 'w') do |f|
-      f.puts($stdin.readline)
-    end
-  elsif options.pub_key_path
-    file = File.new(options.pub_key_path)
-  end
-  
-  ssh = "ssh #{options.user}@#{options.server}"
+	opts = OptionParser.new do |opts|
+		opts.banner = "Usage:"
+		user_opt(opts, options)
+		server_opt(opts, options)
+		opts.on('-f', '--pub-key-file [FILE]', 'The file containing the public key(s)') do |path|
+			options.pub_key_path = path
+		end
+		opts.on('-i', '--stdin', 'get the key(s) from stdin') do
+			options.stdin = true
+		end
+		help_opt(opts)
+	end
+	if !defined? ARGS then puts opts; exit(1); end
+	opts.parse! ARGS
+	
+	# Setup the key file to send
+	file = nil
+	
+	if options.stdin
+		file = Tempfile.new("gitadm")
+		File.open(file.path, 'w') do |f|
+			f.puts($stdin.readline)
+		end
+	elsif options.pub_key_path
+		file = File.new(options.pub_key_path)
+	end
+	
+	ssh = "ssh #{options.user}@#{options.server}"
 
-  # Copy the key over as a temp file
-  file_name = File.basename(file.path)
-  `scp #{file.path} #{options.user}@#{options.server}:/tmp/#{file_name}`
-  
-  # Figure out which authorized_keys file they're using 
-  auth_file = ".ssh/authorized_keys"
-  auth_file = `#{ssh} '[ -f #{auth_file} ] && echo "#{auth_file}" || echo "#{auth_file}2"'`.strip
-  
-  # Get the key into the auth file and cleanup temp
-  `#{ssh} 'cat /tmp/#{file_name} >> #{auth_file}'`
-  `#{ssh} 'rm /tmp/#{file_name}'`
+	# Copy the key over as a temp file
+	file_name = File.basename(file.path)
+	`scp #{file.path} #{options.user}@#{options.server}:/tmp/#{file_name}`
+	
+	# Figure out which authorized_keys file they're using 
+	auth_file = ".ssh/authorized_keys"
+	auth_file = `#{ssh} '[ -f #{auth_file} ] && echo "#{auth_file}" || echo "#{auth_file}2"'`.strip
+	
+	# Get the key into the auth file and cleanup temp
+	`#{ssh} 'cat /tmp/#{file_name} >> #{auth_file}'`
+	`#{ssh} 'rm /tmp/#{file_name}'`
 
 =begin
-  checkout
-  Checks out a branch with tracking enabled.  Basically just shorthand
+	checkout
+	Checks out a branch with tracking enabled.	Basically just shorthand
 =end
 elsif :checkout == command
-  opts = OptionParser.new do |opts|
-    opts.banner = "Usage:"
-    opts.on('-b', '--branch-name NAME', 'The branch name to check out') do |name|
-      options.branch_name = name
-    end
-    help_opt(opts)
-  end
-  if !defined? ARGS then puts opts; exit(1); end
-  opts.parse! ARGS
-  
-  `git checkout --track -b #{options.branch_name} origin/#{options.branch_name}`
-  
+	opts = OptionParser.new do |opts|
+		opts.banner = "Usage:"
+		opts.on('-b', '--branch-name NAME', 'The branch name to check out') do |name|
+			options.branch_name = name
+		end
+		help_opt(opts)
+	end
+	if !defined? ARGS then puts opts; exit(1); end
+	opts.parse! ARGS
+	
+	`git checkout --track -b #{options.branch_name} origin/#{options.branch_name}`
+	
 =begin
-  create-remote-branch
-  Creates a remote branch off the master and optionally lets you check it out with
-  tracking.
+	create-remote-branch
+	Creates a remote branch off the master and optionally lets you check it out with
+	tracking.
 =end
 elsif :create_remote_branch == command
-  opts = OptionParser.new do |opts|
-    opts.banner = "Usage:"
-    opts.on('-b', '--branch-name NAME', 'The branch name to create') do |name|
-      options.branch_name = name
-    end
-    opts.on('-c', '--checkout', 'Also checkout the branch and track it') do
-      options.checkout = true
-    end
-    help_opt(opts)
-  end
-  if !defined? ARGS then puts opts; exit(1); end
-  opts.parse! ARGS
+	opts = OptionParser.new do |opts|
+		opts.banner = "Usage:"
+		opts.on('-b', '--branch-name NAME', 'The branch name to create') do |name|
+			options.branch_name = name
+		end
+		opts.on('-c', '--checkout', 'Also checkout the branch and track it') do
+			options.checkout = true
+		end
+		help_opt(opts)
+	end
+	if !defined? ARGS then puts opts; exit(1); end
+	opts.parse! ARGS
 
-  create_branch(options.branch_name, options.checkout)
+	create_branch(options.branch_name, options.checkout)
 
 =begin
-  create-repo
-  Creates a new bare git repository at the given path.  It also allows you to send the current
-  directory to the new repo and associates the repository and the local dir.  The --no-remote-create
-  option is for sending the contents of a dir to to a place where the git repository has already been
-  initialized like github.com.
+	create-repo
+	Creates a new bare git repository at the given path.	It also allows you to send the current
+	directory to the new repo and associates the repository and the local dir.	The --no-remote-create
+	option is for sending the contents of a dir to to a place where the git repository has already been
+	initialized like github.com.
 =end
 elsif :create_repo == command
-  options.checkout = false
-  
-  opts = OptionParser.new do |opts|
-    opts.banner = "Usage:"
-    user_opt(opts, options)
-    server_opt(opts, options)
-    opts.on('-r', '--path-to-repo REPO', 'The path to the repository on the server') do |path|
-      options.repo_path = path
-    end
-    opts.on('-d', '--use-dir', "Associates the current dir with the new repo and sends the files") do
-      options.use_dir = true
-    end
-    opts.on('-i', '--init', "Instead of --use-dir.  Init initializes the current dir but doesn't add all.  You need to do git adds and a git push origin master before things will work.") do
-      options.init = true
-    end
-    opts.on( "--no-remote-create", "Don't create the dirs on the remote machine" ) do
-      options.no_remote_create = true
-    end
-    opts.on('-b', '--create-branches a,b,c', Array, "A comma separated list of branches") do |branches|
-      options.branches = branches
-    end
-    opts.on('-c', '--checkout-branches', "Also does a checkout of the branches if using --create-branches") do
-      options.checkout = true
-    end
-    help_opt(opts)
-  end
-  if !defined? ARGS then puts opts; exit(1); end
-  opts.parse! ARGS
-  
-  # Make the new dir and init it
-  unless options.no_remote_create
-    ssh = "ssh #{options.user}@#{options.server}"
-    `#{ssh} 'mkdir -p #{options.repo_path}'`
-    `#{ssh} 'cd #{options.repo_path} ; git --bare init'`
-  end
-  
-  # Upload dir contents and wire-up git pull and push
-  if options.use_dir || options.init
-    `git init`
-    `git remote add origin #{options.user}@#{options.server}:#{options.repo_path}`
-    if options.use_dir
-      `git add * ; git commit -m "Initial commit"`
-      `git push origin master`
-    end
-    `git config branch.master.remote origin ; git config branch.master.merge refs/heads/master`
-    `git config push.default matching` # stop the new git from complaining
-  end
-  
-  if options.branches
-    options.branches.each { |branch| create_branch(branch, options.checkout) }
-    `git checkout master` if options.checkout
-  end
+	options.checkout = false
+	
+	opts = OptionParser.new do |opts|
+		opts.banner = "Usage:"
+		user_opt(opts, options)
+		server_opt(opts, options)
+		opts.on('-r', '--path-to-repo REPO', 'The path to the repository on the server') do |path|
+			options.repo_path = path
+		end
+		opts.on('-d', '--use-dir', "Associates the current dir with the new repo and sends the files") do
+			options.use_dir = true
+		end
+		opts.on('-i', '--init', "Instead of --use-dir.	Init initializes the current dir but doesn't add all.	 You need to do git adds and a git push origin master before things will work.") do
+			options.init = true
+		end
+		opts.on( "--no-remote-create", "Don't create the dirs on the remote machine" ) do
+			options.no_remote_create = true
+		end
+		opts.on('-b', '--create-branches a,b,c', Array, "A comma separated list of branches") do |branches|
+			options.branches = branches
+		end
+		opts.on('-c', '--checkout-branches', "Also does a checkout of the branches if using --create-branches") do
+			options.checkout = true
+		end
+		help_opt(opts)
+	end
+	if !defined? ARGS then puts opts; exit(1); end
+	opts.parse! ARGS
+	
+	# Make the new dir and init it
+	unless options.no_remote_create
+		ssh = "ssh #{options.user}@#{options.server}"
+		`#{ssh} 'mkdir -p #{options.repo_path}'`
+		`#{ssh} 'cd #{options.repo_path} ; git --bare init'`
+	end
+	
+	# Upload dir contents and wire-up git pull and push
+	if options.use_dir || options.init
+		`git init`
+		`git remote add origin #{options.user}@#{options.server}:#{options.repo_path}`
+		if options.use_dir
+			`git add * ; git commit -m "Initial commit"`
+			`git push origin master`
+		end
+		`git config branch.master.remote origin ; git config branch.master.merge refs/heads/master`
+		`git config push.default matching` # stop the new git from complaining
+	end
+	
+	if options.branches
+		options.branches.each { |branch| create_branch(branch, options.checkout) }
+		`git checkout master` if options.checkout
+	end
 end
