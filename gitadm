@@ -13,10 +13,10 @@ if ARGV.length == 0
 	with adding ssh keys.
 	
 	Usage:
-			add-key								Adds a public key to the account on the specified server
-			checkout							Checks out a branch with tracking
-			create-remote-branch	Creates a new remote branch
-			create-repo						Creates a new git repository
+			add-key						Adds a public key to the account on the specified server
+			checkout						Checks out a branch with tracking
+			create-remote-branch		Creates a new remote branch
+			create-repo					Creates a new git repository
 			
 EOF
 	puts s
