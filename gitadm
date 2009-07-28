@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# Author: Tom Santos
+# http://github.com/tsantos/gitadm/tree/master
 
 require 'optparse'
 require 'ostruct'
