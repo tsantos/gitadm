@@ -140,8 +140,8 @@ elsif :create_remote_branch == command
 	opts.parse! ARGS
 
 	create_branch(options.branch_name, options.checkout)
-	`git config #{options.branch_name}.remote origin`
-	`git config #{options.branch_name}.merge refs/heads/#{options.branch_name}`
+	`git config branch.#{options.branch_name}.remote origin`
+	`git config branch.#{options.branch_name}.merge refs/heads/#{options.branch_name}`
 
 =begin
 	create-repo
