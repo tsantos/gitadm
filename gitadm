@@ -48,7 +48,7 @@ def help_opt opts
 	end
 end
 
-def create_branch branch_name, checkout = false
+def create_branch_from_master branch_name, checkout = false
 	`git push origin master:refs/heads/#{branch_name}`
 	if checkout
 		`git checkout --track -b #{branch_name} origin/#{branch_name}`
@@ -122,26 +122,52 @@ elsif :checkout == command
 	
 =begin
 	create-remote-branch
-	Creates a remote branch off the master and optionally lets you check it out with
-	tracking.
+	Creates a remote branch.  You can use a local branch to base it from or you can default to
+	the master.  You can also either setup tracking on your local branch or check it out with
+	tracking if you chose to use master as your local branch.
 =end
 elsif :create_remote_branch == command
+	options.local = :master
+	
 	opts = OptionParser.new do |opts|
-		opts.banner = "Usage:"
+		opts.banner = <<EOS
+Examples:
+
+This will use your local branch named 'dabranch' to make a new remote branch called 'dabranch'
+and then it will set up the local branch to track the remote one that was created.
+
+gitadm create-remote-branch -l dabranch -b dabranch -t
+
+This will create a new remote branch called 'dabranch' based off master and then check it out
+with tracking.
+
+gitadm create-remote-branch -b dabranch -c
+
+EOS
+		opts.on('-l', '--local-branch NAME', 'The local branch to base it from.  Defaults to master.') do |name|
+			options.local = name.to_sym
+		end
 		opts.on('-b', '--branch-name NAME', 'The branch name to create') do |name|
 			options.branch_name = name
 		end
-		opts.on('-c', '--checkout', 'Also checkout the branch and track it') do
+		opts.on('-t', '--track', "Setup tracking. (doesn't apply if you used master)") do
+			options.tracking = true
+		end
+		opts.on('-c', '--checkout', "Will check the branch out (only works if local branch was master)") do
 			options.checkout = true
 		end
 		help_opt(opts)
 	end
-	if !defined? ARGS then puts opts; exit(1); end
+	if !defined? ARGS || !options.branch_name then puts opts; exit(1); end
 	opts.parse! ARGS
 
-	create_branch(options.branch_name, options.checkout)
-	`git config branch.#{options.branch_name}.remote origin`
-	`git config branch.#{options.branch_name}.merge refs/heads/#{options.branch_name}`
+	`git push origin #{options.local}:refs/heads/#{options.branch_name}`
+	if options.checkout && options.local == :master
+		`git checkout --track -b #{options.branch_name} origin/#{options.branch_name}`
+	elsif options.tracking && options.local != :master
+		`git config branch.#{options.local}.remote origin`
+		`git config branch.#{options.local}.merge refs/heads/#{options.branch_name}`
+	end
 
 =begin
 	create-repo
@@ -200,7 +226,7 @@ elsif :create_repo == command
 	end
 	
 	if options.branches
-		options.branches.each { |branch| create_branch(branch, options.checkout) }
+		options.branches.each { |branch| create_branch_from_master(branch, options.checkout) }
 		`git checkout master` if options.checkout
 	end
 end
