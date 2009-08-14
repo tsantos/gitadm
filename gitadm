@@ -183,7 +183,7 @@ elsif :create_repo == command
 		opts.banner = "Usage:"
 		user_opt(opts, options)
 		server_opt(opts, options)
-		opts.on('-r', '--path-to-repo REPO', 'The path to the repository on the server') do |path|
+		opts.on('-r', '--path-to-repo REPO', 'The path to the repository on the server. REQUIRED') do |path|
 			options.repo_path = path
 		end
 		opts.on('-d', '--use-dir', "Associates the current dir with the new repo and sends the files") do
@@ -203,7 +203,7 @@ elsif :create_repo == command
 		end
 		help_opt(opts)
 	end
-	if !defined? ARGS then puts opts; exit(1); end
+	if !defined? ARGS || !options.repo_path then puts opts; exit(1); end
 	opts.parse! ARGS
 	
 	# Make the new dir and init it
