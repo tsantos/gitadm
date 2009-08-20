@@ -226,7 +226,7 @@ elsif :create_repo == command
 			`git push origin master`
 		end
 		`git config branch.master.remote origin ; git config branch.master.merge refs/heads/master`
-		`git config push.default matching` # stop the new git from complaining
+		`git config push.default tracking` # stop the new git from complaining
 	end
 	
 	if options.branches
