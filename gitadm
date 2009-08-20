@@ -128,6 +128,7 @@ elsif :checkout == command
 =end
 elsif :create_remote_branch == command
 	options.local = :master
+	options.remote = :origin
 	
 	opts = OptionParser.new do |opts|
 		opts.banner = <<EOS
@@ -144,11 +145,14 @@ with tracking.
 gitadm create-remote-branch -b dabranch -c
 
 EOS
-		opts.on('-l', '--local-branch NAME', 'The local branch to base it from.  Defaults to master.') do |name|
+		opts.on('-l', '--local-branch NAME', 'The local branch to base it from.  Defaults to "master".') do |name|
 			options.local = name.to_sym
 		end
 		opts.on('-b', '--branch-name NAME', 'The branch name to create') do |name|
 			options.branch_name = name
+		end
+		opts.on('-r', '--remote NAME', 'The remote to use.  Defaults to "origin".') do |name|
+			options.remote = name
 		end
 		opts.on('-t', '--track', "Setup tracking. (doesn't apply if you used master)") do
 			options.tracking = true
@@ -161,11 +165,11 @@ EOS
 	if !defined? ARGS || !options.branch_name then puts opts; exit(1); end
 	opts.parse! ARGS
 
-	`git push origin #{options.local}:refs/heads/#{options.branch_name}`
+	`git push #{options.remote} #{options.local}:refs/heads/#{options.branch_name}`
 	if options.checkout && options.local == :master
-		`git checkout --track -b #{options.branch_name} origin/#{options.branch_name}`
+		`git checkout --track -b #{options.branch_name} #{options.remote}/#{options.branch_name}`
 	elsif options.tracking && options.local != :master
-		`git config branch.#{options.local}.remote origin`
+		`git config branch.#{options.local}.remote #{options.remote}`
 		`git config branch.#{options.local}.merge refs/heads/#{options.branch_name}`
 	end
 
