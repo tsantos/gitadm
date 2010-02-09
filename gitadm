@@ -1,6 +1,10 @@
 #!/usr/bin/env ruby
 # Author: Tom Santos
-# http://github.com/tsantos/gitadm/tree/master
+# http://github.com/tsantos/gitadm
+#
+# Here's a bash completion for gitadm.  Put it in your .bashrc:
+#
+# complete -W "$(gitadm | grep '^    ' | awk '{print $1}')" gitadm
 
 require 'optparse'
 require 'ostruct'
