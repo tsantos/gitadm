@@ -53,9 +53,9 @@ def help_opt opts
 end
 
 def create_branch_from_master branch_name, checkout = false
-	`git push origin master:refs/heads/#{branch_name}`
+	system "git push origin master:refs/heads/#{branch_name}"
 	if checkout
-		`git checkout --track -b #{branch_name} origin/#{branch_name}`
+		system "git checkout --track -b #{branch_name} origin/#{branch_name}"
 	end
 end
 
@@ -97,15 +97,15 @@ if :add_key == command
 
 	# Copy the key over as a temp file
 	file_name = File.basename(file.path)
-	`scp #{file.path} #{options.user}@#{options.server}:/tmp/#{file_name}`
+	system "scp #{file.path} #{options.user}@#{options.server}:/tmp/#{file_name}"
 	
 	# Figure out which authorized_keys file they're using 
 	auth_file = ".ssh/authorized_keys"
 	auth_file = `#{ssh} '[ -f #{auth_file} ] && echo "#{auth_file}" || echo "#{auth_file}2"'`.strip
 	
 	# Get the key into the auth file and cleanup temp
-	`#{ssh} 'cat /tmp/#{file_name} >> #{auth_file}'`
-	`#{ssh} 'rm /tmp/#{file_name}'`
+	system "#{ssh} 'cat /tmp/#{file_name} >> #{auth_file}'"
+	system "#{ssh} 'rm /tmp/#{file_name}'"
 
 =begin
 	checkout
@@ -122,7 +122,7 @@ elsif :checkout == command
 	if !defined? ARGS then puts opts; exit(1); end
 	opts.parse! ARGS
 	
-	`git checkout --track -b #{options.branch_name} origin/#{options.branch_name}`
+	system "git checkout --track -b #{options.branch_name} origin/#{options.branch_name}"
 	
 =begin
 	create-remote-branch
@@ -131,26 +131,25 @@ elsif :checkout == command
 	tracking if you chose to use master as your local branch.
 =end
 elsif :create_remote_branch == command
-	options.local = :master
+	options.start_point = :master
 	options.remote = :origin
 	
 	opts = OptionParser.new do |opts|
 		opts.banner = <<EOS
 Examples:
 
-This will use your local branch named 'dabranch' to make a new remote branch called 'dabranch'
-and then it will set up the local branch to track the remote one that was created.
+Typical usage looks like this.  It creates the remote branch and then checks
+it out with tracking:
 
-gitadm create-remote-branch -l dabranch -b dabranch -t
+    > gitadm create-remote-branch -b new-branch-name -c
 
-This will create a new remote branch called 'dabranch' based off master and then check it out
-with tracking.
+If you want to start the branch from a different start point than the master:
 
-gitadm create-remote-branch -b dabranch -c
+    > gitadm create-remote-branch -s other-branch -b new-branch-name -c
 
 EOS
-		opts.on('-l', '--local-branch NAME', 'The local branch to base it from.  Defaults to "master".') do |name|
-			options.local = name.to_sym
+		opts.on('-s', '--start-point NAME', 'The branch in the repo to base it from.  Defaults to "master".') do |name|
+			options.start_point = name.to_sym
 		end
 		opts.on('-b', '--branch-name NAME', 'The branch name to create') do |name|
 			options.branch_name = name
@@ -158,10 +157,7 @@ EOS
 		opts.on('-r', '--remote NAME', 'The remote to use.  Defaults to "origin".') do |name|
 			options.remote = name
 		end
-		opts.on('-t', '--track', "Setup tracking. (doesn't apply if you used master)") do
-			options.tracking = true
-		end
-		opts.on('-c', '--checkout', "Will check the branch out (only works if local branch was master)") do
+		opts.on('-c', '--checkout', "Will check the branch out with tracking") do
 			options.checkout = true
 		end
 		help_opt(opts)
@@ -169,12 +165,10 @@ EOS
 	if !defined? ARGS || !options.branch_name then puts opts; exit(1); end
 	opts.parse! ARGS
 
-	`git push #{options.remote} #{options.local}:refs/heads/#{options.branch_name}`
-	if options.checkout && options.local == :master
-		`git checkout --track -b #{options.branch_name} #{options.remote}/#{options.branch_name}`
-	elsif options.tracking && options.local != :master
-		`git config branch.#{options.local}.remote #{options.remote}`
-		`git config branch.#{options.local}.merge refs/heads/#{options.branch_name}`
+	system "git push #{options.remote} #{options.start_point}:refs/heads/#{options.branch_name}"
+	
+	if options.checkout
+		system "git checkout --track -b #{options.branch_name} #{options.remote}/#{options.branch_name}"
 	end
 
 =begin
@@ -217,24 +211,24 @@ elsif :create_repo == command
 	# Make the new dir and init it
 	unless options.no_remote_create
 		ssh = "ssh #{options.user}@#{options.server}"
-		`#{ssh} 'mkdir -p #{options.repo_path}'`
-		`#{ssh} 'cd #{options.repo_path} ; git --bare init'`
+		system "#{ssh} 'mkdir -p #{options.repo_path}'"
+		system "#{ssh} 'cd #{options.repo_path} ; git --bare init'"
 	end
 	
 	# Upload dir contents and wire-up git pull and push
 	if options.use_dir || options.init
-		`git init`
-		`git remote add origin #{options.user}@#{options.server}:#{options.repo_path}`
+		system "git init"
+		system "git remote add origin #{options.user}@#{options.server}:#{options.repo_path}"
 		if options.use_dir
-			`git add * ; git commit -m "Initial commit"`
-			`git push origin master`
+			system "git add * ; git commit -m 'Initial commit'"
+			system "git push origin master"
 		end
-		`git config branch.master.remote origin ; git config branch.master.merge refs/heads/master`
-		`git config push.default tracking` # stop the new git from complaining
+		system "git config branch.master.remote origin ; git config branch.master.merge refs/heads/master"
+		system "git config push.default tracking" # stop the new git from complaining
 	end
 	
 	if options.branches
 		options.branches.each { |branch| create_branch_from_master(branch, options.checkout) }
-		`git checkout master` if options.checkout
+		system "git checkout master" if options.checkout
 	end
 end
