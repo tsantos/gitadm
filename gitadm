@@ -23,7 +23,7 @@ if ARGV.length == 0
     create-repo           Creates a new git repository
     delete-tags           Deletes tags locally and in the remote
 
-v 1.2.0
+v 1.2.1
 EOF
   puts s
   exit(1)
@@ -132,7 +132,7 @@ elsif :checkout == command
   tracking if you chose to use master as your local branch.
 =end
 elsif :create_remote_branch == command
-  options.start_point = "master"
+  options.start_point = `git symbolic-ref HEAD | sed -e 's/refs\\/heads\\///g\'`.chomp
   options.remote = "origin"
   
   opts = OptionParser.new do |opts|
@@ -151,7 +151,7 @@ If you want to start the branch from a different start point than the master:
 EOS
     user_opt(opts, options)
     server_opt(opts, options)
-    opts.on('--start-point NAME', 'The branch in the repo to base it from.  Defaults to "master".') do |name|
+    opts.on('--start-point NAME', 'The branch in the repo to base it from.  Defaults to current branch.') do |name|
       options.start_point = name
     end
     opts.on('-r', '--remote NAME', 'The remote to use.  Defaults to "origin".') do |name|
