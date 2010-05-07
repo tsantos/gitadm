@@ -122,6 +122,8 @@ elsif :checkout == command
   end
   if !defined? ARGS then puts opts; exit(1); end
   opts.parse! ARGS
+  if ARGS.length < 1 then puts opts; exit(1); end
+  options.branch_name = ARGS[0]
   
   system "git checkout --track -b #{options.branch_name} origin/#{options.branch_name}"
   
