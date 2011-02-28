@@ -23,7 +23,7 @@ if ARGV.length == 0
     create-repo           Creates a new git repository
     delete-tags           Deletes tags locally and in the remote
 
-v 1.2.1
+v 1.2.2
 EOF
   puts s
   exit(1)
